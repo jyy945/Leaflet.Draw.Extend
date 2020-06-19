@@ -95,18 +95,18 @@ L.Edit.Ellipse = L.Edit.SimpleShape.extend({
 
     // resize椭圆事件
     _resize: function (latlng) {
-        this._moveMarker.setLatLng(L.latLngBounds(latlng, this._oppositeCorner).getCenter());   // 设置中间点的经纬度
         var moveLatLng = this._moveMarker.getLatLng();  // 获取中心点的经纬度
         // 获取并设置椭圆的长轴和短轴
         let mRadiusX,mRadiusY;
         if (L.GeometryUtil.isVersion07x()) {
-            mRadiusY = latlng.distanceTo(L.toLatlng(moveLatLng.lat, latlng.lng));
-            mRadiusX = latlng.distanceTo(L.toLatlng(latlng.lat, moveLatLng.lng));
+            mRadiusY = latlng.distanceTo(L.latLng(moveLatLng.lat, latlng.lng));
+            mRadiusX = latlng.distanceTo(L.latLng(latlng.lat, moveLatLng.lng));
         } else {
-            mRadiusY = this._map.distance(latlng, L.toLatlng(moveLatLng.lat, latlng.lng));
-            mRadiusX = this._map.distance(latlng, L.toLatlng(latlng.lat, moveLatLng.lng));
+            mRadiusY = this._map.distance(latlng, L.latLng(moveLatLng.lat, latlng.lng));
+            mRadiusX = this._map.distance(latlng, L.latLng(latlng.lat, moveLatLng.lng));
         }
         this._shape.setRadius([mRadiusX, mRadiusY]);
+        console.log(mRadiusY);
         this._map.fire(L.Draw.Event.EDITRESIZE, {layer: this._shape});
     }
 });
