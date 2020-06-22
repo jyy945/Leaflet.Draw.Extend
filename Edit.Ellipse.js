@@ -1,11 +1,102 @@
-/**
- * @Desc Edit.Ellipse
- * @Auther: jyy
- * @Date: 2020/6/19 10:11
- * @Version: 1.0
- * @Last Modified by: jyy
- * @Last Modified time: 2020/6/19 10:11
- */
+L.drawLocal.draw.handlers.ellipse = {tooltip: {start: "Click and drag to draw ellipse."}}
+L.drawLocal.draw.toolbar.buttons.ellipse = "Draw a ellipse";
+L.DrawToolbar.include({
+    getModeHandlers: function (map) {
+        return [
+            {
+                enabled: this.options.polyline,
+                handler: new L.Draw.Polyline(map, this.options.polyline),
+                title: L.drawLocal.draw.toolbar.buttons.polyline
+            },
+            {
+                enabled: this.options.polygon,
+                handler: new L.Draw.Polygon(map, this.options.polygon),
+                title: L.drawLocal.draw.toolbar.buttons.polygon
+            },
+            {
+                enabled: this.options.rectangle,
+                handler: new L.Draw.Rectangle(map, this.options.rectangle),
+                title: L.drawLocal.draw.toolbar.buttons.rectangle
+            },
+            {
+                enabled: this.options.circle,
+                handler: new L.Draw.Circle(map, this.options.circle),
+                title: L.drawLocal.draw.toolbar.buttons.circle
+            },
+            {
+                enabled: this.options.marker,
+                handler: new L.Draw.Marker(map, this.options.marker),
+                title: L.drawLocal.draw.toolbar.buttons.marker
+            },
+            {
+                enabled: this.options.circlemarker,
+                handler: new L.Draw.CircleMarker(map, this.options.circlemarker),
+                title: L.drawLocal.draw.toolbar.buttons.circlemarker
+            },
+            {
+                enabled: this.options.ellipse,
+                handler: new L.Draw.Ellipse(map, this.options.ellipse),
+                title: L.drawLocal.draw.toolbar.buttons.ellipse
+            }
+        ];
+    }
+});
+L.DrawToolbar.addInitHook(function(){
+    L.Util.setOptions(this, {ellipse:{}})
+});
+
+
+L.Draw = L.Draw || {};
+L.Draw.Ellipse =L.Draw.SimpleShape.extend({
+    statics: {
+        TYPE: 'ellipse'
+    },
+    options: {
+        shapeOptions: {
+            stroke: true,
+            color: '#3388ff',
+            weight: 4,
+            opacity: 0.5,
+            fill: true,
+            fillColor: null, //same as color by default
+            fillOpacity: 0.2,
+            clickable: true
+        },
+        showRadius: true,
+        metric: true, // Whether to use the metric measurement system or imperial
+        feet: true, // When not metric, use feet instead of yards for display
+        nautic: false // When not metric, not feet use nautic mile for display
+    },
+
+    initialize: function (map, options) {
+        this.type = L.Draw.Ellipse.TYPE;
+        this._initialLabelText = L.drawLocal.draw.handlers.ellipse.tooltip.start;
+        L.Draw.SimpleShape.prototype.initialize.call(this, map, options);
+    },
+
+    _drawShape: function (latlng) {
+        if (L.GeometryUtil.isVersion07x()) {
+            mRadiusY = latlng.distanceTo(L.latLng(this._startLatLng.lat, latlng.lng));
+            mRadiusX = latlng.distanceTo(L.latLng(latlng.lat, this._startLatLng.lng));
+        } else {
+            mRadiusY = this._map.distance(latlng, L.latLng(this._startLatLng.lat, latlng.lng));
+            mRadiusX = this._map.distance(latlng, L.latLng(latlng.lat, this._startLatLng.lng));
+        }
+
+        if (!this._shape) {
+            this._shape = new L.Ellipse(this._startLatLng, [mRadiusX, mRadiusY], 0, this.options.shapeOptions);
+            this._map.addLayer(this._shape);
+        } else {
+            this._shape.setRadius([mRadiusX, mRadiusY]);
+        }
+    },
+
+    _fireCreatedEvent: function () {
+        var ellipse = new L.Ellipse(this._startLatLng, this._shape.getRadius(), 0, this.options.shapeOptions);
+        L.Draw.SimpleShape.prototype._fireCreatedEvent.call(this, ellipse);
+    }
+});
+
 L.Edit = L.Edit || {};
 L.Edit.Ellipse = L.Edit.SimpleShape.extend({
     // 创建中心点marker用于移动图形
@@ -97,16 +188,14 @@ L.Edit.Ellipse = L.Edit.SimpleShape.extend({
     _resize: function (latlng) {
         var moveLatLng = this._moveMarker.getLatLng();  // 获取中心点的经纬度
         // 获取并设置椭圆的长轴和短轴
-        let mRadiusX,mRadiusY;
         if (L.GeometryUtil.isVersion07x()) {
-            mRadiusY = latlng.distanceTo(L.latLng(moveLatLng.lat, latlng.lng));
-            mRadiusX = latlng.distanceTo(L.latLng(latlng.lat, moveLatLng.lng));
+            var mRadiusY = latlng.distanceTo(L.latLng(moveLatLng.lat, latlng.lng));
+            var mRadiusX = latlng.distanceTo(L.latLng(latlng.lat, moveLatLng.lng));
         } else {
-            mRadiusY = this._map.distance(latlng, L.latLng(moveLatLng.lat, latlng.lng));
-            mRadiusX = this._map.distance(latlng, L.latLng(latlng.lat, moveLatLng.lng));
+            var mRadiusY = this._map.distance(latlng, L.latLng(moveLatLng.lat, latlng.lng));
+            var mRadiusX = this._map.distance(latlng, L.latLng(latlng.lat, moveLatLng.lng));
         }
         this._shape.setRadius([mRadiusX, mRadiusY]);
-        console.log(mRadiusY);
         this._map.fire(L.Draw.Event.EDITRESIZE, {layer: this._shape});
     }
 });
