@@ -45,7 +45,6 @@ L.DrawToolbar.addInitHook(function(){
     L.Util.setOptions(this, {ellipse:{}})
 });
 
-
 L.Draw = L.Draw || {};
 L.Draw.Ellipse =L.Draw.SimpleShape.extend({
     statics: {
