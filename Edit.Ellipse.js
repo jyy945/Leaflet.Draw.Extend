@@ -41,6 +41,7 @@ L.DrawToolbar.include({
         ];
     }
 });
+
 L.DrawToolbar.addInitHook(function(){
     L.Util.setOptions(this, {ellipse:{}})
 });
